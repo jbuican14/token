@@ -14,5 +14,10 @@
   "type": "module",
   "workspaces": [
     "src/token_frontend"
-  ]
+  ],
+  "dependencies": {
+    "@dfinity/auth-client": "^2.2.0",
+    "@dfinity/authentication": "^0.14.2",
+    "@dfinity/identity": "^2.2.0"
+  }
 }
