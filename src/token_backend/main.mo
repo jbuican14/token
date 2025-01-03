@@ -2,17 +2,20 @@ import Principal "mo:base/Principal";
 import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
 import Debug "mo:base/Debug";
+import Iter "mo:base/Iter";
 
 actor Token {
-  var totalSupply : Nat = 1000000000;
-  var symbol : Text = "PANG";
+  let owner : Principal = Principal.fromText("CANISTER-ID");
+  let totalSupply : Nat = 1000000000;
+  let symbol : Text = "PANG";
+
+  private stable var balanceEntries : [(Principal, Nat)] = [];
 
   // hashmap in Motoku is a hash like object
-  var balances = HashMap.HashMap<Principal, Nat>(1, Principal.equal, Principal.hash);
-
-  //create a legal
-  balances.put(owner, totalSupply);
-
+  private var balances = HashMap.HashMap<Principal, Nat>(1, Principal.equal, Principal.hash);
+  if (balances.size() < 1) {
+    balances.put(owner, totalSupply);
+  };
   public query func balanceOf(who : Principal) : async Nat {
 
     let balance : Nat = switch (balances.get(who)) {
@@ -30,10 +33,9 @@ actor Token {
   public shared (msg) func payOut() : async Text {
     if (balances.get(msg.caller) == null) {
       let amount = 10000;
-
-      balances.put(msg.caller, amount);
+      let result = await transfer(msg.caller, amount);
       Debug.print(debug_show (msg.caller));
-      return "Success";
+      return result;
     } else {
       return "Already claimed token";
     };
@@ -57,5 +59,17 @@ actor Token {
       return "Insufficient Funds";
     }
 
+  };
+
+  system func preupgrade() {
+    balanceEntries := Iter.toArray(balances.entries());
+  };
+
+  system func postupgrade() {
+    balances := HashMap.fromIter<Principal, Nat>(balanceEntries.vals(), 1, Principal.equal, Principal.hash);
+    //create a legal
+    if (balances.size() < 1) {
+      balances.put(owner, totalSupply);
+    };
   };
 };
