@@ -62,3 +62,5 @@ principal: ID_TOKEN
 
 Check the owner's balance: !IMPORTANT USE TOKEN_BBACKEND INSTEAD OF TOKEN
 dfx canister call token_backend balanceOf "( $OWNER_PUBLIC_KEY )"
+
+![project preview](auth-npm.png)
